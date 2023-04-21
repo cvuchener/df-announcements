@@ -1,0 +1,24 @@
+syntax = "proto2"
+
+package dfproto.Reports;
+
+option optimize_for = LITE_RUNTIME;
+
+message Report {
+    required int32 id = 1;
+    optional string type = 2;
+    optional string text = 3;
+    optional int32 color = 4;
+    optional bool bright = 5;
+    optional bool continuation = 6;
+    optional int32 repeat = 7;
+    optional int32 year = 8;
+    optional int32 time = 9;
+}
+
+// Reports::GetAnnouncements: EmptyMessage -> ReportList
+// Reports::GetReports: EmptyMessage -> ReportList
+message ReportList {
+    repeated Report reports = 1;
+}
+

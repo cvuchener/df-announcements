@@ -1,0 +1,4 @@
+[submodule "external/dfhack-client-qt"]
+	path = external/dfhack-client-qt
+	url = https://github.com/cvuchener/dfhack-client-qt.git
+	branch = qt6
