@@ -141,7 +141,7 @@ void ReportModel::update(const dfproto::Reports::ReportList &report_list)
 			auto count = std::distance(df_report, insert_end);
 			beginInsertRows({}, row, row + count - 1);
 			report = _reports.insert(report, count, {});
-			for (std::size_t i = 0; i < count; ++i) {
+			for (int i = 0; i < count; ++i) {
 				auto &new_report = *(report++);
 				new_report.init(*(df_report++));
 				_type_list.addType(new_report.type);

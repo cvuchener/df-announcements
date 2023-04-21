@@ -48,7 +48,7 @@ set(PROTO_FILES
 protobuf_generate_cpp(PROTO_SOURCES PROTO_HEADERS ${PROTO_FILES})
 set_property(SOURCE ${PROTO_SOURCES} ${PROTO_HEADERS} PROPERTY SKIP_AUTOMOC ON)
 
-add_executable(df-announcements ${CPP_SOURCES} ${UI_SOURCES} ${PROTO_SOURCES})
+add_executable(df-announcements WIN32 ${CPP_SOURCES} ${UI_SOURCES} ${PROTO_SOURCES})
 add_dependencies(df-announcements version)
 target_include_directories(df-announcements PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(df-announcements
