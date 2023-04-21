@@ -20,6 +20,7 @@
 #define GAME_MANAGER_H
 
 #include <QObject>
+#include <QTimer>
 
 #include <dfhack-client-qt/Client.h>
 #include <dfhack-client-qt/Function.h>
@@ -74,6 +75,8 @@ signals:
 private slots:
 	void onConnectionChanged(bool);
 	void onNotification(DFHack::Color color, const QString &text);
+	void onAutorefreshIntervalChanged();
+	void onAutorefreshEnabledChanged();
 
 private:
 	void setState(State state);
@@ -90,6 +93,8 @@ private:
 	DFHack::Basic::GetDFVersion _get_df_version;
 	Reports::GetAnnouncements _get_announcements;
 	Reports::GetReports _get_reports;
+
+	QTimer _refresh_timer;
 };
 
 #endif

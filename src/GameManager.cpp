@@ -44,6 +44,17 @@ GameManager::GameManager(QObject *parent):
 	QObject::connect(
 		&settings->report_source, &SettingPropertyBase::valueChanged,
 		this, &GameManager::update);
+	QObject::connect(
+		&settings->autorefresh_interval, &SettingPropertyBase::valueChanged,
+		this, &GameManager::onAutorefreshIntervalChanged);
+	onAutorefreshIntervalChanged();
+	QObject::connect(
+		&settings->autorefresh_enabled, &SettingPropertyBase::valueChanged,
+		this, &GameManager::onAutorefreshEnabledChanged);
+	_refresh_timer.setSingleShot(true);
+	QObject::connect(
+		&_refresh_timer, &QTimer::timeout,
+		this, &GameManager::update);
 }
 
 GameManager::~GameManager()
@@ -72,31 +83,28 @@ void GameManager::connect(const QString &host, quint16 port)
 	}
 	}
 	setState(Connecting);
+	using VersionReply = DFHack::CallReply<dfproto::StringMessage>;
 	_dfhack.connect(host, port).then(this, [this](bool connected) {
 		if (!connected) {
 			setState(Disconnected);
 			throw tr("Connection failed");
 		}
-		else {
-			return DFHack::bindAll(
-				_get_version,
-				_get_df_version,
-				_get_announcements,
-				_get_reports
-			);
-		}
+		return DFHack::bindAll(
+			_get_version,
+			_get_df_version,
+			_get_announcements,
+			_get_reports
+		);
 	}).unwrap().then(this, [this](bool success) {
 		if (!success) {
 			_dfhack.disconnect();
 			throw tr("Failed to bind functions");
 		}
-		else {
-			auto calls = QList<QFuture<DFHack::CallReply<dfproto::StringMessage>>>()
-				<< _get_version.call().first
-				<< _get_df_version.call().first;
-			return QtFuture::whenAll(calls.begin(), calls.end());
-		}
-	}).unwrap().then([this](const QList<QFuture<DFHack::CallReply<dfproto::StringMessage>>> &r) {
+		auto calls = QList<QFuture<VersionReply>>()
+			<< _get_version.call().first
+			<< _get_df_version.call().first;
+		return QtFuture::whenAll(calls.begin(), calls.end());
+	}).unwrap().then([this](const QList<QFuture<VersionReply>> &r) {
 		auto version_result = r[0].result();
 		auto df_version_result = r[1].result();
 		if (!version_result || !df_version_result) {
@@ -106,6 +114,7 @@ void GameManager::connect(const QString &host, quint16 port)
 		_dfhack_version = QString::fromUtf8(version_result->value());
 		_df_version = QString::fromUtf8(df_version_result->value());
 		setState(Connected);
+		update();
 	}).onFailed([this](QString message) {
 		error(message);
 	});
@@ -120,8 +129,8 @@ void GameManager::update()
 {
 	if (_state != Connected)
 		return;
-	auto result = [this]() {
-		auto settings = Application::instance()->settings();
+	auto settings = Application::instance()->settings();
+	auto result = [this, settings]() {
 		switch (settings->report_source()) {
 		case ReportSource::Announcements:
 			return _get_announcements.call().first;
@@ -131,19 +140,23 @@ void GameManager::update()
 			Q_UNREACHABLE();
 		}
 	}();
-	result.then(this, [this](DFHack::CallReply<dfproto::Reports::ReportList> reply) {
+	using Reply = DFHack::CallReply<dfproto::Reports::ReportList>;
+	result.then(this, [this, settings](Reply reply) {
 		if (!reply) {
 			error(tr("Failed to get reports"));
 		}
 		else {
 			_reports->update(*reply);
 		}
+		if (settings->autorefresh_enabled())
+			_refresh_timer.start();
 	});
 }
 
 void GameManager::onConnectionChanged(bool connected)
 {
 	if (!connected) {
+		_refresh_timer.stop();
 		_reports->clear();
 		setState(Disconnected);
 	}
@@ -152,6 +165,21 @@ void GameManager::onConnectionChanged(bool connected)
 void GameManager::onNotification(DFHack::Color color, const QString &text)
 {
 	qInfo() << text;
+}
+
+void GameManager::onAutorefreshIntervalChanged()
+{
+	auto interval = Application::instance()->settings()->autorefresh_interval();
+	_refresh_timer.setInterval(interval*1000);
+}
+
+void GameManager::onAutorefreshEnabledChanged()
+{
+	auto enabled = Application::instance()->settings()->autorefresh_enabled();
+	if (enabled)
+		_refresh_timer.start();
+	else
+		_refresh_timer.stop();
 }
 
 void GameManager::setState(State state)

@@ -20,10 +20,10 @@
 #define MAIN_WINDOW_H
 
 #include <QMainWindow>
-#include <QTimer>
 #include <QMenu>
 
 namespace Ui { class MainWindow; }
+class QLabel;
 
 #include "GameManager.h"
 #include "ReportFilterProxyModel.h"
@@ -45,8 +45,7 @@ private slots:
 	void on_action_copy_triggered();
 	void on_action_about_triggered();
 	void updateConnectionState(GameManager::State state);
-	void updateAutoRefreshInterval();
-	void updateAutoRefreshEnabled();
+	void updateAutoRefreshAction();
 	void updateViewScrollPosition();
 
 private:
@@ -54,7 +53,7 @@ private:
 	GameManager _game_manager;
 	QSortFilterProxyModel _type_filter;
 	ReportFilterProxyModel _report_filter;
-	QTimer _auto_refresh;
+	QLabel *_connection_status;
 };
 
 #endif

@@ -35,9 +35,11 @@
 MainWindow::MainWindow(QWidget *parent):
 	QMainWindow(parent),
 	_ui(std::make_unique<Ui::MainWindow>()),
-	_report_filter(*_game_manager.typeList())
+	_report_filter(*_game_manager.typeList()),
+	_connection_status(new QLabel(this))
 {
 	_ui->setupUi(this);
+	_ui->statusbar->addPermanentWidget(_connection_status);
 
 	auto settings = Application::instance()->settings();
 
@@ -125,15 +127,9 @@ MainWindow::MainWindow(QWidget *parent):
 	connect(_ui->action_refresh, &QAction::triggered, &_game_manager, &GameManager::update);
 
 	// Auto refresh
-	connect(&_auto_refresh, &QTimer::timeout,
-		&_game_manager, &GameManager::update);
-	connect(&settings->autorefresh_interval, &SettingPropertyBase::valueChanged,
-		this, &MainWindow::updateAutoRefreshInterval);
-	updateAutoRefreshInterval();
-	_auto_refresh.setSingleShot(false);
 	connect(&settings->autorefresh_enabled, &SettingPropertyBase::valueChanged,
-		this, &MainWindow::updateAutoRefreshEnabled);
-	updateAutoRefreshEnabled();
+		this, &MainWindow::updateAutoRefreshAction);
+	updateAutoRefreshAction();
 
 	// Follow new reports
 	connect(model, &QAbstractItemModel::rowsInserted,
@@ -207,35 +203,24 @@ void MainWindow::updateConnectionState(GameManager::State state)
 	_ui->action_disconnect->setEnabled(state == GameManager::Connected);
 	switch (state) {
 	case GameManager::Disconnected:
-		_ui->statusbar->showMessage(tr("Disconnected"));
+		_connection_status->setText(tr("Disconnected"));
 		break;
 	case GameManager::Connecting:
-		_ui->statusbar->showMessage(tr("Connecting..."));
+		_connection_status->setText(tr("Connecting..."));
 		break;
 	case GameManager::Connected:
-		_ui->statusbar->showMessage(tr("Connected (DF %1 - DFHack %2)")
+		_connection_status->setText(tr("Connected"));
+		_ui->statusbar->showMessage(tr("DF %1 - DFHack %2")
 				.arg(_game_manager.getDFVersion())
 				.arg(_game_manager.getDFHackVersion()));
 		break;
 	}
-	if (state == GameManager::Connected)
-		_game_manager.update();
 }
 
-void MainWindow::updateAutoRefreshInterval()
-{
-	auto interval = Application::instance()->settings()->autorefresh_interval();
-	_auto_refresh.setInterval(interval*1000);
-}
-
-void MainWindow::updateAutoRefreshEnabled()
+void MainWindow::updateAutoRefreshAction()
 {
 	auto enabled = Application::instance()->settings()->autorefresh_enabled();
 	_ui->action_autorefresh->setChecked(enabled);
-	if (enabled)
-		_auto_refresh.start();
-	else
-		_auto_refresh.stop();
 }
 
 void MainWindow::updateViewScrollPosition()
@@ -244,4 +229,3 @@ void MainWindow::updateViewScrollPosition()
 		_ui->view_reports->scrollToBottom();
 	}
 }
-
