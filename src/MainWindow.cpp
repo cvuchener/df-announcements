@@ -30,6 +30,7 @@
 #include "ReportModel.h"
 #include "AnnouncementTypeList.h"
 #include "SettingsDialog.h"
+#include "Version.h"
 
 MainWindow::MainWindow(QWidget *parent):
 	QMainWindow(parent),
@@ -194,6 +195,9 @@ void MainWindow::on_action_about_triggered()
 	QDialog dialog;
 	Ui::AboutDialog about_ui;
 	about_ui.setupUi(&dialog);
+	about_ui.label_app_version->setText(tr("Version %1").arg(VERSION_NAME));
+	about_ui.label_qt_build_version->setText(QT_VERSION_STR);
+	about_ui.label_qt_runtime_version->setText(qVersion());
 	dialog.exec();
 }
 

@@ -3,9 +3,10 @@ project(df-announcements)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Protobuf REQUIRED)
+find_package(Git)
 
-option(USE_EXTERNAL_DFHACKQTCLIENT "Use dfhack-qt-client from external subdirectory" ON)
-if(${USE_EXTERNAL_DFHACKQTCLIENT})
+option(USE_EXTERNAL_DFHACKCLIENTQT "Use dfhack-client-qt from external subdirectory" ON)
+if(${USE_EXTERNAL_DFHACKCLIENTQT})
 	add_subdirectory(external/dfhack-client-qt)
 	add_library(DFHackClientQt::dfhack-client-qt ALIAS dfhack-client-qt)
 else()
@@ -13,11 +14,12 @@ else()
 endif()
 
 add_custom_target(version ${CMAKE_COMMAND}
-	-D DIR=${CMAKE_SOURCE_DIR}
-	-D VERSION_IN=${CMAKE_SOURCE_DIR}/src/Version.h.in
-	-D VERSION_OUT=${CMAKE_BINARY_DIR}/src/Version.h
+	-D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+	-D PROJECT_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+	-D VERSION_IN=${CMAKE_CURRENT_SOURCE_DIR}/src/Version.h.in
+	-D VERSION_OUT=${CMAKE_CURRENT_BINARY_DIR}/Version.h
 	-D FALLBACK_VERSION=1.0
-	-P cmake/GitVersion.cmake
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GitVersion.cmake
 )
 
 set(CPP_SOURCES
