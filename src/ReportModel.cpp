@@ -24,9 +24,9 @@
 #include "AnnouncementTypeList.h"
 #include "Application.h"
 
-ReportModel::ReportModel(AnnouncementTypeList &type_list, QObject *parent):
+ReportModel::ReportModel(QObject *parent):
 	QAbstractTableModel(parent),
-	_type_list(type_list)
+	_type_list(Application::instance()->settings()->announcement_types)
 {
 	auto settings = Application::instance()->settings();
 	connect(&settings->color_palette, &QAbstractItemModel::dataChanged, [this]() {
@@ -124,10 +124,10 @@ void ReportModel::update(const dfproto::Reports::ReportList &report_list)
 				df_report, df_reports.end(),
 				[](const auto &a, const auto &b){return a.id == b.id();});
 		{
-			auto start_index = index(std::distance(_reports.begin(), report), 0);;
+			auto start_index = index(std::distance(_reports.begin(), report), 0);
 			while (report != report_equal_end)
 				(report++)->update(*(df_report++));
-			auto end_index = index(std::distance(_reports.begin(), report), static_cast<int>(Columns::Count));;
+			auto end_index = index(std::distance(_reports.begin(), report), static_cast<int>(Columns::Count)-1);
 			dataChanged(start_index, end_index);
 		}
 		if (report == _reports.end() && df_report == df_reports.end())
@@ -181,6 +181,5 @@ void ReportModel::report::init(const dfproto::Reports::Report &df_report)
 
 void ReportModel::report::update(const dfproto::Reports::Report &df_report)
 {
-	time = DF::tick(df_report.time()) + DF::year(df_report.year());
 	repeat = df_report.repeat();
 }

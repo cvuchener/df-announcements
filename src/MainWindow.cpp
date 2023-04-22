@@ -35,7 +35,6 @@
 MainWindow::MainWindow(QWidget *parent):
 	QMainWindow(parent),
 	_ui(std::make_unique<Ui::MainWindow>()),
-	_report_filter(*_game_manager.typeList()),
 	_connection_status(new QLabel(this))
 {
 	_ui->setupUi(this);
@@ -95,7 +94,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 
 	// Filters
-	_type_filter.setSourceModel(_game_manager.typeList());
+	_type_filter.setSourceModel(&settings->announcement_types);
 	_type_filter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 
 	_ui->list_types->setModel(&_type_filter);

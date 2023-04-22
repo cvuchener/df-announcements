@@ -18,14 +18,14 @@
 
 #include "ReportFilterProxyModel.h"
 
-#include "AnnouncementTypeList.h"
+#include "Application.h"
 #include "ReportModel.h"
 
-ReportFilterProxyModel::ReportFilterProxyModel(const AnnouncementTypeList &type_list, QObject *parent):
+ReportFilterProxyModel::ReportFilterProxyModel(QObject *parent):
 	QSortFilterProxyModel(parent),
-	_type_list(type_list)
+	_type_list(Application::instance()->settings()->announcement_types)
 {
-	connect(&type_list, &AnnouncementTypeList::typesChanged, [this]() {
+	connect(&_type_list, &AnnouncementTypeList::typesChanged, [this]() {
 			invalidateRowsFilter();
 		});
 }

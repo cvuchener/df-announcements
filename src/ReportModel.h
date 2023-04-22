@@ -32,7 +32,7 @@ class ReportModel: public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	ReportModel(AnnouncementTypeList &type_list, QObject *parent = nullptr);
+	ReportModel(QObject *parent = nullptr);
 	~ReportModel() override = default;
 
 	enum class Columns {

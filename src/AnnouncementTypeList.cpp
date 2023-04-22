@@ -18,13 +18,29 @@
 
 #include "AnnouncementTypeList.h"
 
+#include <QSettings>
+
+static const char * const AnnouncementTypeGroupName = "announcement_types";
+
 AnnouncementTypeList::AnnouncementTypeList(QObject *parent):
 	QAbstractListModel(parent)
 {
+	QSettings settings;
+	settings.beginGroup(AnnouncementTypeGroupName);
+	for (const auto &key: settings.childKeys()) {
+		addType(key.toLocal8Bit(), settings.value(key).toBool());
+	}
+	settings.endGroup();
 }
 
 AnnouncementTypeList::~AnnouncementTypeList()
 {
+	QSettings settings;
+	settings.beginGroup(AnnouncementTypeGroupName);
+	for (const auto &[name, enabled]: _types) {
+		settings.setValue(name, enabled);
+	}
+	settings.endGroup();
 }
 
 Qt::ItemFlags AnnouncementTypeList::flags(const QModelIndex &) const
@@ -71,13 +87,13 @@ bool AnnouncementTypeList::isTypeEnabled(const QByteArray &type) const
 	return it->second;
 }
 
-void AnnouncementTypeList::addType(const QByteArray &type)
+void AnnouncementTypeList::addType(const QByteArray &type, bool enabled)
 {
 	auto it = std::ranges::lower_bound(_types, type, std::less<>{}, &decltype(_types)::value_type::first);
 	if (it != _types.end() && it->first == type)
 		return;
 	int row = std::distance(_types.begin(), it);
 	beginInsertRows({}, row, row);
-	_types.insert(it, {type, true});
+	_types.insert(it, {type, enabled});
 	endInsertRows();
 }

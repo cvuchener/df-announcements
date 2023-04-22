@@ -27,7 +27,7 @@ class ReportFilterProxyModel: public QSortFilterProxyModel
 {
 	Q_OBJECT
 public:
-	ReportFilterProxyModel(const AnnouncementTypeList &type_list, QObject *parent = nullptr);
+	ReportFilterProxyModel(QObject *parent = nullptr);
 	~ReportFilterProxyModel() override;
 
 protected:

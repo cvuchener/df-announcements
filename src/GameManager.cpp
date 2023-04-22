@@ -26,8 +26,7 @@
 
 GameManager::GameManager(QObject *parent):
 	QObject(parent),
-	_type_list(std::make_unique<AnnouncementTypeList>()),
-	_reports(std::make_unique<ReportModel>(*_type_list)),
+	_reports(std::make_unique<ReportModel>()),
 	_state(Disconnected),
 	_get_version(&_dfhack),
 	_get_df_version(&_dfhack),

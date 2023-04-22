@@ -36,7 +36,7 @@ public:
 	bool isTypeEnabled(const QByteArray &type) const;
 
 public slots:
-	void addType(const QByteArray &type);
+	void addType(const QByteArray &type, bool enabled = true);
 
 signals:
 	void typesChanged();

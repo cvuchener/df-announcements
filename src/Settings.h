@@ -74,6 +74,7 @@ private:
 };
 
 #include "ColorPaletteModel.h"
+#include "AnnouncementTypeList.h"
 
 enum class ReportSource {
 	Announcements,
@@ -93,7 +94,7 @@ struct Settings
 	SettingProperty<double> autorefresh_interval = {"autorefresh/interval", 2.0};
 
 	ColorPaletteModel color_palette;
-
+	AnnouncementTypeList announcement_types;
 };
 
 #endif

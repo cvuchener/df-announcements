@@ -60,7 +60,6 @@ public:
 	const QString &getDFHackVersion() const { return _dfhack_version; };
 	const QString &getDFVersion() const { return _df_version; };
 
-	Q_INVOKABLE AnnouncementTypeList *typeList() { return _type_list.get(); }
 	Q_INVOKABLE ReportModel *reports() { return _reports.get(); }
 
 public slots:
@@ -81,7 +80,6 @@ private slots:
 private:
 	void setState(State state);
 
-	std::unique_ptr<AnnouncementTypeList> _type_list;
 	std::unique_ptr<ReportModel> _reports;
 
 	State _state;
